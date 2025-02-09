@@ -1,0 +1,35 @@
+services:
+  mysql-db:
+    container_name:  mysql-db
+    image: mysql:8.4
+    restart: unless-stopped
+    env_file: ./.env
+    environment:
+      MYSQL_ROOT_PASSWORD: $MYSQLDB_PASSWORD
+    ports:
+      - $MYSQLDB_LOCAL_PORT:$MYSQLDB_DOCKER_PORT
+    volumes:
+      - ./db:/var/lib/mysql:rw
+      - ./mysql-db:/docker-entrypoint-initdb.d/
+
+  nestjs-app:
+    container_name: nestjs-app
+    depends_on:
+      - mysql-db
+    build: ./docker/app
+    restart: unless-stopped
+    env_file: ./.env
+    ports:
+      - $NESTJS_APP_LOCAL_PORT:$NESTJS_APP_DOCKER_PORT
+    environment:
+      - DB_HOST=$MYSQLDB_HOST
+      - DB_USER=$MYSQLDB_USER
+      - DB_PASSWORD=$MYSQLDB_PASSWORD
+      - DB_NAME=$MYSQLDB_DATABASE
+      - DB_PORT=$MYSQLDB_DOCKER_PORT
+      - JWT_SECRET=$JWT_SECRET
+    volumes:
+      - ./app:/usr/src/app
+
+volumes:
+  mysql-volume:
