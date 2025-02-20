@@ -4,6 +4,7 @@ import {
 	JoinColumn,
 	OneToMany,
 	PrimaryGeneratedColumn,
+	type Relation,
 } from "typeorm";
 import { Todo } from "./todo.entity";
 
@@ -30,5 +31,5 @@ export class User {
 		{ cascade: true },
 	)
 	@JoinColumn({ name: "id", referencedColumnName: "creatorId" })
-	todos: Array<Todo>;
+	todos: Array<Relation<Todo>>;
 }

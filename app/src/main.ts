@@ -1,7 +1,7 @@
 import { NestFactory } from "@nestjs/core";
 import { JwtService } from "@nestjs/jwt";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
-import * as cookieParser from "cookie-parser";
+import cookieParser from "cookie-parser";
 import { AppModule } from "./app.module";
 import { LoggerService } from "./infrastructure/logger/logger.service";
 import { JwtInterceptor } from "./interceptors/jwt.interceptor";
