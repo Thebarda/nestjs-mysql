@@ -1,10 +1,20 @@
-import { Body, Controller, Get, Inject, Post, Req, Res } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Injectable,
+  Post,
+  Req,
+  Res,
+} from "@nestjs/common";
 import { ApiBody, ApiResponse, ApiTags } from "@nestjs/swagger";
-import type { Response } from "express";
+import type { Request, Response } from "express";
 import type { UserModel } from "src/domain/model/user";
 import { Public } from "src/infrastructure/decorators/public.decorator";
 import { AuthUsecasesModule } from "src/usecases/auth/auth.usecases";
 import type { AuthLogoutUseCase } from "src/usecases/auth/logout.usecase";
+import type { AuthRefreshTokenUseCase } from "src/usecases/auth/refreshToken.usecase";
 import type { AuthSignInUseCase } from "src/usecases/auth/signIn.usecase";
 import type { AuthSignUpUseCase } from "src/usecases/auth/signUp.usecase";
 import type { UseCaseProxy } from "src/usecases/usecases-proxy";
@@ -23,6 +33,8 @@ export class AuthController {
     private readonly signInUseCase: UseCaseProxy<AuthSignInUseCase>,
     @Inject(AuthUsecasesModule.LOGOUT)
     private readonly logoutUseCase: UseCaseProxy<AuthLogoutUseCase>,
+    @Inject(AuthUsecasesModule.REFRESH_TOKEN)
+    private readonly refreshTokenUseCase: UseCaseProxy<AuthRefreshTokenUseCase>,
   ) {}
 
   @Post("sign-up")
@@ -78,5 +90,25 @@ export class AuthController {
     response.clearCookie("refreshToken");
 
     return "success";
+  }
+
+  @Post("refresh-token")
+  @ApiResponse({
+    type: TokensPresenter,
+  })
+  async refreshToken(
+    @Req() request: Request & {
+      user: Pick<UserModel, "id" | "mail" | "username">;
+    },
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const tokens = await this.refreshTokenUseCase
+      .getInstance()
+      .execute(request.user.id, request.cookies.refreshToken);
+
+    response.cookie("accessToken", tokens.accessToken);
+    response.cookie("refreshToken", tokens.refreshToken);
+
+    return tokens;
   }
 }

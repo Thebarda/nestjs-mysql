@@ -5,6 +5,7 @@ import { DatabaseUserModule } from "src/infrastructure/repositories/user/user.mo
 import { DatabaseUserService } from "src/infrastructure/repositories/user/user.service";
 import { UseCaseProxy } from "../usecases-proxy";
 import { AuthLogoutUseCase } from "./logout.usecase";
+import { AuthRefreshTokenUseCase } from "./refreshToken.usecase";
 import { AuthSignInUseCase } from "./signIn.usecase";
 import { AuthSignUpUseCase } from "./signUp.usecase";
 
@@ -15,6 +16,7 @@ export class AuthUsecasesModule {
 	static SIGN_UP = "sign_up";
 	static SIGN_IN = "sign_in";
 	static LOGOUT = "logout";
+	static REFRESH_TOKEN = "refresh_token";
 
 	static register(): DynamicModule {
 		return {
@@ -48,11 +50,23 @@ export class AuthUsecasesModule {
 					useFactory: (userRepository: DatabaseUserService) =>
 						new UseCaseProxy(new AuthLogoutUseCase(userRepository)),
 				},
+				{
+					inject: [AuthRepositoryService, DatabaseUserService],
+					provide: AuthUsecasesModule.REFRESH_TOKEN,
+					useFactory: (
+						authRepository: AuthRepositoryService,
+						userRepository: DatabaseUserService,
+					) =>
+						new UseCaseProxy(
+							new AuthRefreshTokenUseCase(userRepository, authRepository),
+						),
+				},
 			],
 			exports: [
 				AuthUsecasesModule.SIGN_UP,
 				AuthUsecasesModule.SIGN_IN,
 				AuthUsecasesModule.LOGOUT,
+				AuthUsecasesModule.REFRESH_TOKEN,
 			],
 		};
 	}
