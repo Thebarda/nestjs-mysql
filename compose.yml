@@ -1,0 +1,36 @@
+services:
+  db:
+    container_name: db
+    image: mysql:8.4
+    restart: unless-stopped
+    env_file: ./.env
+    environment:
+      MYSQL_ROOT_PASSWORD: $DB_ROOT_PASSWORD
+    ports:
+      - $DB_PORT:$DB_PORT
+    volumes:
+      - ./db:/var/lib/mysql:rw
+      - ./tables:/docker-entrypoint-initdb.d/
+  
+  app:
+    container_name: app
+    depends_on:
+      - db
+    build: ./docker/app
+    restart: unless-stopped
+    env_file: ./.env
+    ports:
+      - $APP_LOCAL_PORT:$APP_DOCKER_PORT
+    environment:
+      - DB_HOST=$DB_HOST
+      - DB_USER=$DB_USER
+      - DB_PASSWORD=$DB_PASSWORD
+      - DB_NAME=$DB_NAME
+      - DB_PORT=$DB_PORT
+      - JWT_SECRET=$JWT_SECRET
+      - JWT_REFRESH_SECRET=$JWT_REFRESH_SECRET
+    volumes:
+      - ./app/:/usr/src/app
+
+volumes:
+  mysql-volumes:
