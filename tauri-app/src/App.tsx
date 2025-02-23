@@ -2,27 +2,21 @@ import { useEffect, useState } from "react";
 import reactLogo from "./assets/react.svg";
 import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
-import { useCookies } from "react-cookie";
+import { useStore } from "./useStore";
 
 function App() {
 	const [greetMsg, setGreetMsg] = useState("");
 	const [name, setName] = useState("");
-	const [isCookieSet, setIsCookieSet] = useState(false);
-	const [cookies, setCookies, removeCookie] = useCookies(["cookie"]);
+	const [value, setValue] = useStore("store", "key");
 
 	async function greet() {
 		setGreetMsg(await invoke("greet", { name }));
 	}
 	useEffect(() => {
-		setCookies("cookie", "dd");
 		fetch("https://api.frankfurter.dev/v1/latest")
 			.then((response) => response.json())
 			.then((data) => console.log(data));
 	}, []);
-
-	useEffect(() => {
-		setIsCookieSet(!!cookies.cookie);
-	}, [cookies]);
 
 	return (
 		<main className="container">
@@ -46,7 +40,6 @@ function App() {
 				onSubmit={(e) => {
 					e.preventDefault();
 					greet();
-					isCookieSet ? removeCookie("cookie") : setCookies("cookie", "greet");
 				}}
 			>
 				<input
@@ -57,7 +50,10 @@ function App() {
 				<button type="submit">Greet</button>
 			</form>
 			<p>{greetMsg}</p>
-			<p>Is cookie set? {JSON.stringify(isCookieSet)}</p>
+			<p>{JSON.stringify(value)}</p>
+			<button onClick={() => (value ? setValue(null) : setValue("heyyy"))}>
+				Toggle value in store
+			</button>
 		</main>
 	);
 }
