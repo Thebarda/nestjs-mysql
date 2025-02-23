@@ -12,11 +12,8 @@ export class AuthRepositoryService implements AuthRepositoryModel {
     return await argon2.hash(data);
   }
 
-  async comparePassword(
-    plainTextPassword: string,
-    hashedPassword: string,
-  ): Promise<boolean> {
-    return await argon2.verify(hashedPassword, plainTextPassword);
+  async compare(plainText: string, hashed: string): Promise<boolean> {
+    return await argon2.verify(hashed, plainText);
   }
 
   async getTokens(
